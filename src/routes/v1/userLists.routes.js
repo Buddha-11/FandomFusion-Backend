@@ -19,13 +19,13 @@ router.post('/movie/add',userAuthMiddleware, addMovieToList);
 
 // Update routes
 router.patch('/anime/update/:id', userAuthMiddleware, updateAnimeInList);
-router.patch('/games/update/:id', userAuthMiddleware, updateGameInList);
-router.patch('/movies/update/:id', userAuthMiddleware, updateMovieInList);
+router.patch('/game/update/:id', userAuthMiddleware, updateGameInList);
+router.patch('/movie/update/:id', userAuthMiddleware, updateMovieInList);
 
 // Remove routes
 router.delete('/anime/remove/:id', userAuthMiddleware, removeAnimeFromList);
-router.delete('/games/remove/:id', userAuthMiddleware, removeGameFromList);
-router.delete('/movies/remove/:id', userAuthMiddleware, removeMovieFromList);
+router.delete('/game/remove/:id', userAuthMiddleware, removeGameFromList);
+router.delete('/movie/remove/:id', userAuthMiddleware, removeMovieFromList);
 
 //Get anime list of a user
 router.get('/anime', userAuthMiddleware, getAnimeList);

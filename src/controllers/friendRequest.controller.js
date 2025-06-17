@@ -72,7 +72,8 @@ export const getFriendRequests = async (req, res) => {
     const friendRequests = await FriendRequest.find({
       recipient: userId,
     }).populate('sender', 'username profileImg'); // Populate sender with username and profileImg
-
+    //console.log(`Friend requests for user ${userId}:`, friendRequests);
+    
     res.status(200).json({
       friendRequests,
     });

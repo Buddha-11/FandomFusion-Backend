@@ -3,7 +3,9 @@ import User from "../models/user.model.js";
 
 export const searchUsers = async (req, res) => {
   try {
-    const searchQuery = req.query.search || '';
+    const searchQuery = req.query.search ;
+    console.log(`Search query: ${searchQuery}`);
+    
     const users = await User.find({
       username: { $regex: searchQuery, $options: 'i' } 
     }).select('id username profileImg'); 

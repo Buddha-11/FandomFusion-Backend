@@ -397,53 +397,61 @@ export const removeMovieFromList = async (req, res) => {
 };
 
 // Function to fetch user's anime list
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
 export const getAnimeList = async (req, res) => {
-    try {
+  try {
+    console.log("✅ [getAnimeList] Starting with user:", req.user.id);
 
-        //Retrieve user's animeList from the database
-        const userId = req.user.id;
-        const animeList = await AnimeList.findOne({ user: userId });
+    const userId = req.user.id;
+    const animeList = await AnimeList.findOne({ user: userId });
 
-        if (!animeList) {
-            return res.status(404).json({ error: "No anime list found for this user." });
-        }
-
-        const animeEntries = animeList.animeEntries;
-
-        const enrichedAnimeList = await Promise.all(
-          animeEntries.map(async (animeId) => {
-              // Populate the Anime document referenced by the animeId
-              const animeEntry = await Anime.findById(animeId);
-      
-              if (!animeEntry) {
-                  throw new Error(`Anime entry with ID ${animeId} not found`);
-              }
-              
-      
-              const { publicDbId, status, rating } = animeEntry;
-                   
-              // Fetch detailed info from Jikan API
-              const jikanResponse = await axios.get(`https://api.jikan.moe/v4/anime/${publicDbId}`);       
-              const jikanData = jikanResponse.data?.data;
-      
-              if (!jikanData) {
-                  throw new Error(`Failed to fetch data for anime ID ${publicDbId}`);
-              }
-      
-              // Combine Jikan API response with database fields
-              return formatAnimeListResponse(jikanData, { status, rating });
-          })
-      );
-      
-
-        //Return the enriched and formatted data
-        return res.status(200).json({ animeList: enrichedAnimeList });
-    } catch (error) {
-        return res.status(500).json({ 
-            message: "An error occurred while fetching the anime list.",
-            error: error.message
-         });
+    if (!animeList) {
+      console.warn("⚠️ No anime list for user:", userId);
+      return res.status(404).json({ error: "No anime list found for this user." });
     }
+
+    const animeEntries = animeList.animeEntries;
+
+    const enrichedAnimeList = [];
+    for (const animeId of animeEntries) {
+      try {
+        console.log(`🔍 Fetching Anime ID: ${animeId}`);
+        const animeEntry = await Anime.findById(animeId);
+        if (!animeEntry) throw new Error(`Anime entry with ID ${animeId} not found`);
+
+        const { publicDbId, status, rating } = animeEntry;
+        console.log(`🌐 Calling Jikan for ID: ${publicDbId}`);
+
+        const jikanResponse = await axios.get(`https://api.jikan.moe/v4/anime/${publicDbId}`);
+        const jikanData = jikanResponse.data?.data;
+
+        if (!jikanData) throw new Error(`No data for Jikan ID ${publicDbId}`);
+
+        const formatted = formatAnimeListResponse(jikanData, { status, rating });
+        console.log(`✅ Formatted:`, formatted);
+
+        enrichedAnimeList.push(formatted);
+
+        // Respect Jikan rate limit: wait 500 ms between calls
+        await sleep(500);
+
+      } catch (inner) {
+        console.error(`❌ Skipped Anime ID ${animeId}: ${inner.message}`);
+        // Skip, continue loop
+      }
+    }
+
+    console.log("🎉 Final Anime List:", enrichedAnimeList);
+    return res.status(200).json({ animeList: enrichedAnimeList });
+
+  } catch (error) {
+    console.error("🔥 [getAnimeList] Error:", error);
+    return res.status(500).json({
+      message: "An error occurred while fetching the anime list.",
+      error: error.message,
+    });
+  }
 };
 
 

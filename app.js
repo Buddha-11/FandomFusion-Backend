@@ -28,9 +28,9 @@ app.use(cors());
 app.use("/api/v1/auth/", userAuthRoutes);
 app.use("/api/v1/test", testRoutes);
 app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/lists", userListsRoutes);
+app.use("/api/v1/list", userListsRoutes);
 app.use("/api/v1/media", mediaRoutes);
-app.use("/api/v1/chats", chatRoutes);
+app.use("/api/v1/chat", chatRoutes);
 app.use("/api/v1/post", postRoutes);
 
 app.get("/", (req, res) => {
