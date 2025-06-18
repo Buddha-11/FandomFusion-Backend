@@ -401,13 +401,11 @@ const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 export const getAnimeList = async (req, res) => {
   try {
-    console.log("✅ [getAnimeList] Starting with user:", req.user.id);
 
     const userId = req.user.id;
     const animeList = await AnimeList.findOne({ user: userId });
 
     if (!animeList) {
-      console.warn("⚠️ No anime list for user:", userId);
       return res.status(404).json({ error: "No anime list found for this user." });
     }
 
@@ -416,12 +414,10 @@ export const getAnimeList = async (req, res) => {
     const enrichedAnimeList = [];
     for (const animeId of animeEntries) {
       try {
-        console.log(`🔍 Fetching Anime ID: ${animeId}`);
         const animeEntry = await Anime.findById(animeId);
         if (!animeEntry) throw new Error(`Anime entry with ID ${animeId} not found`);
 
         const { publicDbId, status, rating } = animeEntry;
-        console.log(`🌐 Calling Jikan for ID: ${publicDbId}`);
 
         const jikanResponse = await axios.get(`https://api.jikan.moe/v4/anime/${publicDbId}`);
         const jikanData = jikanResponse.data?.data;
@@ -429,7 +425,6 @@ export const getAnimeList = async (req, res) => {
         if (!jikanData) throw new Error(`No data for Jikan ID ${publicDbId}`);
 
         const formatted = formatAnimeListResponse(jikanData, { status, rating });
-        console.log(`✅ Formatted:`, formatted);
 
         enrichedAnimeList.push(formatted);
 
@@ -442,7 +437,6 @@ export const getAnimeList = async (req, res) => {
       }
     }
 
-    console.log("🎉 Final Anime List:", enrichedAnimeList);
     return res.status(200).json({ animeList: enrichedAnimeList });
 
   } catch (error) {
