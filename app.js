@@ -51,3 +51,4 @@ mongoose.connect(dbURL)
     process.exit();
 });
 
+export default app;

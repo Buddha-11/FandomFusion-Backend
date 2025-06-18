@@ -109,3 +109,4 @@ web_modules/
 .pnp.*
 
 users.json
+.vercel
